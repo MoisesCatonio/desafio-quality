@@ -1,0 +1,11 @@
+# Dependências do Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Arquivo de ambiente com senhas reais
+.env
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
