@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Testes - API de Pedidos</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 30px auto; padding: 20px; background: #f4f4f9; color: #333; }
+        .card { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #0066cc; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 120px; font-family: monospace; }
+        button { background: #0066cc; color: #fff; border: none; padding: 10px 15px; margin-top: 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0055b3; }
+        pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+    <h1>Painel de Controle de Pedidos</h1>
+
+    <!-- CRIAR PEDIDO -->
+    <div class="card">
+        <h2>Criar Pedido (POST)</h2>
+        <label>Payload (JSON):</label>
+        <textarea id="postPayload">{
+  "numeroPedido": "v10089015vdb-01",
+  "valorTotal": 10000,
+  "dataCriacao": "2023-07-19T12:24:11.5299601+00:00",
+  "items": [
+    {
+      "idItem": "2434",
+      "quantidadeItem": 1,
+      "valorItem": 1000
+    }
+  ]
+}</textarea>
+        <button onclick="criarPedido()">Enviar POST</button>
+    </div>
+
+    <!-- CONSULTAR / LISTAR -->
+    <div class="card">
+        <h2>Consultar Pedidos (GET)</h2>
+        <button onclick="listarPedidos()">Listar Todos (/order/list)</button>
+        <br><br>
+        <label>Buscar por ID:</label>
+        <input type="text" id="searchId" placeholder="Ex: v10089015vdb">
+        <button onclick="buscarPorId()">Buscar por ID</button>
+    </div>
+
+    <!-- RESPOSTA -->
+    <div class="card">
+        <h2>Resposta da API</h2>
+        <pre id="apiResponse">Aguardando requisição...</pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+
+        async function criarPedido() {
+            try {
+                const bodyData = JSON.parse(document.getElementById('postPayload').value);
+                const response = await fetch(`${API_URL}/order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+                const data = await response.json();
+                document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('apiResponse').innerText = 'Erro: ' + err.message;
+            }
+        }
+
+        async function listarPedidos() {
+            try {
+                const response = await fetch(`${API_URL}/order/list`);
+                const data = await response.json();
+                document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('apiResponse').innerText = 'Erro: ' + err.message;
+            }
+        }
+
+        async function buscarPorId() {
+            const id = document.getElementById('searchId').value.trim();
+            if (!id) {
+                alert('Digite um ID para buscar!');
+                return;
+            }
+            try {
+                const response = await fetch(`${API_URL}/order/${id}`);
+                const data = await response.json();
+                document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('apiResponse').innerText = 'Erro: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
