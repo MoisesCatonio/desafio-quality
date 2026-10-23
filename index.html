@@ -13,7 +13,12 @@
         textarea { height: 120px; font-family: monospace; }
         button { background: #0066cc; color: #fff; border: none; padding: 10px 15px; margin-top: 15px; border-radius: 4px; cursor: pointer; }
         button:hover { background: #0055b3; }
+        button.btn-danger { background: #cc0000; }
+        button.btn-danger:hover { background: #990000; }
+        button.btn-warning { background: #e68a00; }
+        button.btn-warning:hover { background: #b36b00; }
         pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .row { display: flex; gap: 10px; align-items: flex-end; }
     </style>
 </head>
 <body>
@@ -44,9 +49,30 @@
         <h2>Consultar Pedidos (GET)</h2>
         <button onclick="listarPedidos()">Listar Todos (/order/list)</button>
         <br><br>
-        <label>Buscar por ID:</label>
-        <input type="text" id="searchId" placeholder="Ex: v10089015vdb">
-        <button onclick="buscarPorId()">Buscar por ID</button>
+        <label>Número do Pedido (ID):</label>
+        <div class="row">
+            <input type="text" id="targetId" placeholder="Ex: v10089015vdb">
+            <button onclick="buscarPorId()">Buscar</button>
+            <button onclick="deletarPedido()" class="btn-danger">Deletar</button>
+        </div>
+    </div>
+
+    <!-- ATUALIZAR PEDIDO (PUT) -->
+    <div class="card">
+        <h2>Atualizar Pedido (PUT)</h2>
+        <label>Novo Payload de Atualização (JSON):</label>
+        <textarea id="putPayload">{
+  "valorTotal": 15000,
+  "dataCriacao": "2023-07-19T14:00:00.000Z",
+  "items": [
+    {
+      "idItem": "2434",
+      "quantidadeItem": 2,
+      "valorItem": 7500
+    }
+  ]
+}</textarea>
+        <button onclick="atualizarPedido()" class="btn-warning">Enviar PUT (Usa o ID digitado acima)</button>
     </div>
 
     <!-- RESPOSTA -->
@@ -84,13 +110,53 @@
         }
 
         async function buscarPorId() {
-            const id = document.getElementById('searchId').value.trim();
+            const id = document.getElementById('targetId').value.trim();
             if (!id) {
-                alert('Digite um ID para buscar!');
+                alert('Digite um ID no campo correspondente!');
                 return;
             }
             try {
                 const response = await fetch(`${API_URL}/order/${id}`);
+                const data = await response.json();
+                document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('apiResponse').innerText = 'Erro: ' + err.message;
+            }
+        }
+
+        async function atualizarPedido() {
+            const id = document.getElementById('targetId').value.trim();
+            if (!id) {
+                alert('Digite o ID do pedido que deseja atualizar no campo "Número do Pedido (ID)"!');
+                return;
+            }
+            try {
+                const bodyData = JSON.parse(document.getElementById('putPayload').value);
+                const response = await fetch(`${API_URL}/order/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+                const data = await response.json();
+                document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('apiResponse').innerText = 'Erro: ' + err.message;
+            }
+        }
+
+        async function deletarPedido() {
+            const id = document.getElementById('targetId').value.trim();
+            if (!id) {
+                alert('Digite o ID do pedido que deseja deletar no campo "Número do Pedido (ID)"!');
+                return;
+            }
+            if (!confirm(`Tem certeza que deseja deletar o pedido ${id}?`)) {
+                return;
+            }
+            try {
+                const response = await fetch(`${API_URL}/order/${id}`, {
+                    method: 'DELETE'
+                });
                 const data = await response.json();
                 document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
             } catch (err) {
